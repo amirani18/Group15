@@ -2,6 +2,7 @@
 import { error } from 'console';
 import * as dotenv from 'dotenv'; 
 import { ListFormat, moveSyntheticComments } from 'typescript';
+import{log} from '../../logger.js'
 dotenv.config();
 export interface queries {
     years:number
@@ -123,114 +124,14 @@ export interface Response {
 const start = new Date();
 
 //url and token handling
-const input = "https://github.com/lodash/lodash";
 const TOKEN = process.env.TOKEN;
 export const GRAPHQL_URL = 'https://api.github.com/graphql';
 
 //input url processing
-const mod = input.substring(19);
-const sep = mod.indexOf('/');
-const owner = mod.substring(0, sep);
-const name = mod.substring(sep+1);
+
 
 //query parameters
-export const query = `
-query {
-  rateLimit {
-    cost
-    remaining
-    resetAt
-  }
-	repository(owner: "${owner}", name: "${name}") {
-    diskUsage
-    mentionableUsers(first: 10) {
-      totalCount
-      nodes {
-        contributionsCollection {
-          totalIssueContributions
-          totalPullRequestContributions
-          totalPullRequestReviewContributions
-          totalRepositoryContributions
-        }
-      }
-    }
-    contributingGuidelines {
-      body
-    }
-    codeOfConduct {
-      body
-    }
-    description
-    hasWikiEnabled
-    dependencyGraphManifests {
-      edges {
-        node {
-          dependencies{
-            totalCount
-          }
-          dependenciesCount
-        }
-      }
-    }
-    icount: issues {
-      totalCount
-    }
-    issues(last: 20) {
-      nodes {
-        participants {
-          totalCount
-        }
-        closed
-        updatedAt
-      }
-    }
-    createdAt
-    updatedAt
-    vulnerabilityAlerts {
-      totalCount
-    }
-    prcount: pullRequests {
-      totalCount
-    }
-    pullRequests(last: 10) {
-      nodes {
-        publishedAt
-      }
-    }
-    fcount: forks {
-      totalCount
-    }
-    stargazerCount
-    watchers {
-      totalCount
-    }
-    licenseInfo {
-      name
-    }
-    readme: object(expression: "main:README.md") {
-      ... on Blob {
-        text
-      }
-    }
-    readme2: object(expression: "master:README.md") {
-      ... on Blob {
-        text
-      }
-    }
-    license: object(expression: "main:LICENSE") {
-      ... on Blob {
-        text
-      }
-    }
-    license2: object(expression: "master:LICENSE") {
-      ... on Blob {
-        text
-      }
-    } 
-  }
-}
-`
-;
+
 
 //request headers
 export const headers = {
@@ -240,26 +141,28 @@ export const headers = {
 
 
 //action item
-export async function fetch_repo(GRAPHQL_URL:string, headers: HeadersInit,query:string, NUM:number):Promise<queries> {
-    try {
-        console.log("Fetching repository data...");
+export async function fetch_repo(GRAPHQL_URL:string, headers: HeadersInit,urlInput:string, NUM:number):Promise<queries> {
+    var query = set_query(urlInput);
+  try {
+        log("Fetching repository data...",1,"INFO")
+        // console.log("Fetching repository data...");
         const response = await fetch(GRAPHQL_URL, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify({ query })
         });
-        console.log("Repository data fetched successfully.");
-
+        
         const data = await response.json();
         if(data) {
             //casting as prerecorded interface
             const info = data as Response;
+            //console.log(data);
             
             //checking for rate limit and ensuring warnings are issued and information is provided
             if(info.data && info.data.rateLimit) {
                 const rate = info.data.rateLimit;
                 if(rate.remaining <= rate.cost) {
-                    console.log('WARNING: You have reached the rate limit. To get more information, please wait until: ${rate.resetAt}');
+                    log('You have reached the rate limit. To get more information, please wait until: ${rate.resetAt}', 2,"WARNING")
                 }
             }
 
@@ -365,13 +268,7 @@ export async function fetch_repo(GRAPHQL_URL:string, headers: HeadersInit,query:
                     disk: disk,
                 }
                 return parameters
-                // console.log(net);
-                // console.log(netlat);
-                // console.log(buslat);
-                // console.log(corlat);
-                // console.log(ramlat);
-                // console.log(reslat);
-                // console.log(liclat);
+    
             }
             else {
                 throw new Error("Repository data info not found.");
@@ -388,106 +285,6 @@ export async function fetch_repo(GRAPHQL_URL:string, headers: HeadersInit,query:
 
 
 
-// function busfactor(info: Response, years: number, depend: number): [number, number] {
-//     const metrics = info.data.repository;
-//     const BUS_TOTAL = 45 + 60 + 50 + 35;
-
-//     var contr = exists(metrics.mentionableUsers.totalCount);
-//     var contr_i = metrics.mentionableUsers.nodes.length - 1;
-//     var sum = 0;
-//     for(let i = 0; i <= contr_i; i++) {
-//         //estimating contributions per repository
-//         sum += (metrics.mentionableUsers.nodes[i].contributionsCollection.totalIssueContributions + metrics.mentionableUsers.nodes[i].contributionsCollection.totalPullRequestReviewContributions + metrics.mentionableUsers.nodes[i].contributionsCollection.totalPullRequestContributions);   
-//     }
-//     var c_act = sum / NUM;
-//     var contr_m = ver_bounds((contr/years)/40);
-//     var cact_m = ver_bounds(c_act/100);
-//     var doc = 0;
-//     doc = str_exists(metrics.contributingGuidelines, doc, true);
-//     doc = str_exists(metrics.codeOfConduct, doc, true);
-//     doc = str_exists(metrics.description, doc, false);
-//     var doc_m = (doc / 10000) * 0.75;
-//     if(metrics.hasWikiEnabled) {
-//         doc_m += 0.25;
-//     }
-//     doc_m = ver_bounds(doc_m);
-//     var depend_m = ver_bounds(depend/0.01);
-
-//     var bus = (contr_m * 45 + cact_m * 60 + doc_m * 50 + depend_m * 35) / BUS_TOTAL;
-//     console.log(bus);
-//     return [bus, depend_m];
-// }
-// function correctness(info: Response, start: Date, update: Date, open: number): [number, number] {
-//     const metrics = info.data.repository;
-//     const COR_TOTAL = 65 + 55 + 70;
-
-//     var vul = exists(metrics.vulnerabilityAlerts.totalCount);
-//     vul /= metrics.diskUsage;
-//     var open_m = ver_bounds(open / 20);
-//     var update_m = ver_bounds(1 - (daysbetween(update, start) / 30));
-//     var vul_m = ver_bounds(1 - (vul / 0.001));
-    
-//     var cor = (open_m * 65 + update_m * 55 + vul_m * 70) / COR_TOTAL;
-//     console.log(cor);
-//     return [cor, update_m];
-// }
-// function rampup(info: Response, years: number, update_m: number): number {
-//     const metrics = info.data.repository;
-//     const RAM_TOTAL = 65 + 65 + 55 + 35 + 45 + 65;
-
-//     var is = exists(metrics.icount.totalCount);
-//     var prs = exists(metrics.prcount.totalCount);
-//     var fs = exists(metrics.fcount.totalCount);
-//     var stars = exists(metrics.stargazerCount);
-//     var ws = exists(metrics.watchers.totalCount);
-//     var icount_m = ver_bounds((is/years) / 730);
-//     var prcount_m = ver_bounds((prs/years) / 365);
-//     var fcount_m = ver_bounds((fs/years) / 1000);
-//     var scount_m = ver_bounds((stars/years) / 10000);
-//     var wcount_m = ver_bounds((ws/years) / 100);
-    
-//     var ram = (icount_m * 65 + prcount_m * 65 + fcount_m * 55 + scount_m * 35 + wcount_m * 45 + update_m * 65) / RAM_TOTAL;
-//     console.log(ram);
-//     return ram;
-// }
-// function responsive(info: Response, partic: number, len_i: number, update_m: number, depend_m: number): number {
-//     const metrics = info.data.repository;
-//     const RES_TOTAL = 50 + 55 + 45 + 45 + 35;
-
-//     var len_pr = metrics.pullRequests.nodes.length - 1;
-//     var issue_time;
-//     var pr_time;
-//     if(len_i != -1) {
-//         issue_time = new Date(metrics.issues.nodes[len_i].updatedAt);
-//     }
-//     if(len_pr != -1) {
-//         pr_time = new Date(metrics.pullRequests.nodes[len_pr].publishedAt);
-//     }
-//     var ipar_m = ver_bounds(partic / 5);
-//     var itime_m = 0;
-//     if(issue_time) {
-//         itime_m = ver_bounds(1 - ((daysbetween(issue_time, start) - 10) / 365));
-//     }
-//     var prtime_m = 0;
-//     if(pr_time) {
-//         prtime_m = ver_bounds(1 - ((daysbetween(pr_time, start) - 10) / 365));
-//     }
-    
-//     var res = (ipar_m * 50 + itime_m * 55 + prtime_m * 45 + update_m * 45 + depend_m * 35) / RES_TOTAL;
-//     console.log(res);
-//     return res;
-// }
-// function license(info: Response): number {
-//     const metrics = info.data.repository;
-//     const LIC_TOTAL = 50 + 70;
-
-//     var lic = 0;
-//     if(metrics.licenseInfo.name) {
-//         lic = 1;
-//     }
-//     console.log(lic);
-//     return lic;
-// }
 
 export function daysbetween(before: Date, after: Date): number {
     //gets difference in milliseconds, then converts to days
@@ -528,5 +325,109 @@ export function checkcompatible(text: String, lictext: any, lic: number) {
         }
     }
     return lic;
+}
+
+function set_query(input:string) {
+    const mod = input.substring(19);
+const sep = mod.indexOf('/');
+const owner = mod.substring(0, sep);
+const name = mod.substring(sep+1);
+  const query = `
+query {
+  rateLimit {
+    cost
+    remaining
+    resetAt
+  }
+	repository(owner: "${owner}", name: "${name}") {
+    diskUsage
+    mentionableUsers(first: 10) {
+      totalCount
+      nodes {
+        contributionsCollection {
+          totalIssueContributions
+          totalPullRequestContributions
+          totalPullRequestReviewContributions
+          totalRepositoryContributions
+        }
+      }
+    }
+    contributingGuidelines {
+      body
+    }
+    codeOfConduct {
+      body
+    }
+    description
+    hasWikiEnabled
+    dependencyGraphManifests {
+      edges {
+        node {
+          dependencies{
+            totalCount
+          }
+          dependenciesCount
+        }
+      }
+    }
+    icount: issues {
+      totalCount
+    }
+    issues(last: 20) {
+      nodes {
+        participants {
+          totalCount
+        }
+        closed
+        updatedAt
+      }
+    }
+    createdAt
+    updatedAt
+    vulnerabilityAlerts {
+      totalCount
+    }
+    prcount: pullRequests {
+      totalCount
+    }
+    pullRequests(last: 10) {
+      nodes {
+        publishedAt
+      }
+    }
+    fcount: forks {
+      totalCount
+    }
+    stargazerCount
+    watchers {
+      totalCount
+    }
+    licenseInfo {
+      name
+    }
+    readme: object(expression: "main:README.md") {
+      ... on Blob {
+        text
+      }
+    }
+    readme2: object(expression: "master:README.md") {
+      ... on Blob {
+        text
+      }
+    }
+    license: object(expression: "main:LICENSE") {
+      ... on Blob {
+        text
+      }
+    }
+    license2: object(expression: "master:LICENSE") {
+      ... on Blob {
+        text
+      }
+    } 
+  }
+}
+`
+return query
 }
 

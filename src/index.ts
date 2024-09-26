@@ -1,7 +1,5 @@
 import { URL } from 'url';
 import { url_interface } from './metrics/interfaces.js'; 
-// import { analyzeNpm } from './api_handler/npm_handler/analyzer_npm.js';
-// import { analyzeGraphQL } from './api_handler/graphql_handler/analyzer_graphql.js';
 import * as readline from 'readline';
 import * as fs from 'fs';
 import { Metrics } from './metrics/metrics.js';
@@ -10,10 +8,11 @@ import { error } from 'console';
 import {log} from './logger.js'
 import { fetch_repo, queries } from './api_handler/graphql_handler/analyzer_graphql.js';
 import { headers } from './api_handler/graphql_handler/analyzer_graphql.js';
-import { query } from './api_handler/graphql_handler/analyzer_graphql.js';
 import { GRAPHQL_URL } from './api_handler/graphql_handler/analyzer_graphql.js';
+import { emptyLogFile } from './logger.js';
+import { exit } from 'process';
 // Function to validate if the input is a valid URL
-function isValidUrl(input: string): boolean {
+export function isValidUrl(input: string): boolean {
     try {
         new URL(input);  // If URL constructor doesn't throw, it's valid
         return true;
@@ -37,13 +36,14 @@ async function getGitHubRepoUrl(package_name: string) {
         var gitUrl = repository.url.replace(/^git\+/, '').replace(/\.git$/, '');
         if (gitUrl.startsWith('ssh://git@')) {
             //some urls start with the ssh://git@ prefix 
-            console.log("Clean up ssh URL:")
+            //console.log("Clean up ssh URL:")
             gitUrl = gitUrl.replace('ssh://git@', 'https://');
           }        
-        console.log(`GitHub URL for ${package_name}: ${gitUrl}`);
+        //console.log(`GitHub URL for ${package_name}: ${gitUrl}`);
         return gitUrl;
       } else {
-        console.log(`No repository URL found for ${package_name}`);
+        
+        //console.log(`No repository URL found for ${package_name}`);
         return null;
       }
     } catch (error) {
@@ -66,7 +66,7 @@ async function readLinesFromFile(file_path: string) {
     });
 
     for await (const line of rl) {
-        calculate_factors(line);
+        await calculate_factors(line);
     }
 }
 
@@ -75,12 +75,10 @@ async function readLinesFromFile(file_path: string) {
 
 
 export async function get_url_interface(urlInput:string):Promise<url_interface> {
-    console.log("This is a GitHub link.");
-    // const graphqlResult = analyzeGraphQL();
     let url:url_interface;
     let parameters:queries |undefined;
     let metrics:Metrics | undefined;
-    console.log("Starting analysis...");
+    
     url = {
         bus_factor:0,
         bus_factor_latency:0,
@@ -97,62 +95,53 @@ export async function get_url_interface(urlInput:string):Promise<url_interface> 
         disk:0
 
     };
-    console.log("Fetching repository data...");
     try {
         // Call the fetchRepo function
-        parameters = await fetch_repo(GRAPHQL_URL, headers, query, 10);
-        console.log("Repository data fetched successfully.");
-
+        parameters = await fetch_repo(GRAPHQL_URL, headers, urlInput, 10);
         if (parameters) {
             metrics = new Metrics(url,parameters);
         }
         else {
-            console.log("Parameters Not Found")
+            log("Couldn't locate parameters from repository",2,"ERROR")
+            return url;
         }
     
-        // analyze the data
-        if (metrics) {
-            metrics.calculate_bus_factor();
-            metrics.calculate_correctness();
-            metrics.calculate_rampup();
-            metrics.calc_responsive_maintainer();
-            metrics.calc_net_score();
-            metrics.calc_license()
-            console.log(`Calculated Bus Factor: ${url.bus_factor.toFixed(2)}`);
+        log("Parameters Found",1,"INFO")
+        log("Calculating metrics",1,"INFO")
+        metrics.calculate_bus_factor();
+        metrics.calculate_correctness();
+        metrics.calculate_rampup();
+        metrics.calc_responsive_maintainer();
+        metrics.calc_net_score();
+        metrics.calc_license()
     
-        }
-        else {
-            console.log("Metrics not found")
-        }
-        return url;
     } catch (error) {
         if (error instanceof Error) {
-            console.error("Error calling fetchRepo:", error.message); // Log only the error message
+            log(`Error calling fetchRepo: ${error.message}`,2,"CRITICAL")
+            process.exit(1)
         } else {
-            console.error("An unknown error occurred."); // Fallback if error is not an instance of Error
+            log("Unknwon Error",2,"Error")
+            process.exit(1);
+            
         }
     }
     return url
-
-
 }
 
 export async function calculate_factors(urlInput:string) {
-    console.log(1);
     if (isValidUrl(urlInput)) {
         //console.log(`The URL you provided is valid: ${urlInput}`);
     } 
     else {
-        console.error('Error: Invalid URL format.');
-        return;
+        log("Invalid URL format",2,"ERROR")
+        process.exit(1);
     }
-
-        // console.log('URL validation successful.');
-
-        // console.log("Starting analysis...");
+        log("URL validation successful",1,"INFO");
+        log("Starting Analysis",1,"INFO");
 
         // This if else statement checks if the link is a github link or a npm link, then calls the appropriate analyze functions.  Then it outputs the result.
     if(urlInput.includes("github.com")){
+        log("Link is a GitHub URL",1,"INFO");
         let url:url_interface | undefined;
         url = await get_url_interface(urlInput);
         let data;
@@ -161,17 +150,17 @@ export async function calculate_factors(urlInput:string) {
             data ={
                 URL:urlInput,
                 NetScore: url.net_score,
-                NetScoreLatency: url.net_score_latency,
+                NetScore_Latency: url.net_score_latency,
                 RampUP:url.ramp_up,
-                RampUpLatency: url.ramp_up_latency,
+                RampUp_Latency: url.ramp_up_latency,
                 Correctness: url.correctness,
-                Correctness_latency: url.correctness_latency,
+                Correctness_Latency: url.correctness_latency,
                 BusFactor : url.bus_factor,
-                BusFactorLatency : url.bus_factor_latency,
-                License: url.license,
-                License_latency: url.license_latency,
+                BusFactor_Latency : url.bus_factor_latency,
                 ResponsiveMaintainer : url.responsive_maintainer,
-                ResponsiveMaintainerLicese :url.responsive_maintainer_latency
+                ResponsiveMaintainer_Latency :url.responsive_maintainer_latency,
+                License: url.license,
+                License_Latency: url.license_latency,
             }
         }
         else {
@@ -184,7 +173,7 @@ export async function calculate_factors(urlInput:string) {
     }
     else if (urlInput.includes("npmjs.com/package")) {
         //find eqvivalent github link and then call analyzeGraphQL();
-        console.log("This is an npm link.");
+        log("Link is an NPM URL",1,"INFO");
 
         // const npmResult = analyzeNpm();
         // console.log(npmResult);
@@ -213,26 +202,48 @@ export async function calculate_factors(urlInput:string) {
 
     }
     else {
-        console.log("This is neither a GitHub nor an npm link.");
+        log("This is neither a GitHub nor an npm url",2,"WARNING");
+        process.exit(1);
+        //console.log("This is neither a GitHub nor an npm link.");
         return;
     }     
 
-    console.log("All analyses complete.");
 
 }
+
 // Main function to handle URL input from command line
-function main() {
-    // Create an interface for input and output streams
-
-    // Prompt user for URL input
+async function main() {
+    emptyLogFile();
+    log("Starting Process",1,"INFO");
     const file_path = process.argv[2];
-    readLinesFromFile(file_path)
-    console.log(5);
+    try {
+        await readLinesFromFile(file_path)
+        log("All analyses complete",1,"INFO")
+        process.exit(0);
+    }
+
+    catch (error) {
+        if (error instanceof Error) {
+            log(`Error during processing: ${error.message}`, 2, "ERROR");
+        } else {
+            log("An unknown error occurred during processing", 2, "ERROR");
+        }
+        process.exit(1); // Exit with failure code
+    }
     
     
 }
+
 
 main()
 
 
+
+/*
+1. Writes test cases for empty files
+2. Configure ./run test
+3. Write the coverage percentage
+4. Create error checking, add promises, add cases for if parameter cannot be extracted, exiting 0 and 1
+5. Run in eceprog
+*/
 

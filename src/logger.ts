@@ -5,27 +5,16 @@ import * as path from 'path';
 // Load environment variables from .env file
 dotenv.config();
 
-// Enum for log levels
-enum LogLevel {
-    Silent = 0,
-    Info = 1,
-    Debug = 2,
-}
 
-// Global log level variable, initialized from the .env file or default
-let currentLogLevel: LogLevel = parseInt(process.env.LOG_LEVEL || '0') as LogLevel;
 
-// Function to update log level at runtime
-function setLogLevel(newLevel: LogLevel) {
-    console.log(`Changing log level to: ${newLevel}`);
-    currentLogLevel = newLevel;
-}
+let currentLogLevel: number = parseInt(process.env.LOG_LEVEL || '0');
+
 
 // Function to write log based on the log level
-export function log(message: string, level: LogLevel) {
+export function log(message: string, level:number,type:string) {
     if (currentLogLevel >= level) {
-        const logFilePath = process.env.LOG_FILE || 'app.log'; // Default to 'app.log' if not set
-        const logMessage = `${new Date().toISOString()} - ${message}\n`;
+        const logFilePath = process.env.LOG_FILE || 'project.log'; // Default to 'app.log' if not set
+        const logMessage = `[${type}] ${new Date().toISOString()} - ${message}\n`;
 
         // Ensure directory exists before writing the log
         const directory = path.dirname(logFilePath);
@@ -33,15 +22,21 @@ export function log(message: string, level: LogLevel) {
             fs.mkdirSync(directory, { recursive: true });
         }
 
-        // Append the log message to the log file
         fs.appendFileSync(logFilePath, logMessage, 'utf8');
 
-        // Print to the console if log level is 1 or higher
-        if (currentLogLevel > LogLevel.Silent) {
-            console.log(logMessage);
-        }
+    }
+}
+
+export function emptyLogFile() {
+    const logFilePath = process.env.LOG_FILE || 'project.log'; // Default log file path
+
+    try {
+        // Write an empty string to the log file
+        fs.writeFileSync(logFilePath, '', 'utf8');
+        // console.log(`Log file '${logFilePath}' has been emptied.`);
+    } catch (error) {
+        console.error(`Error emptying the log file`);
     }
 }
 
 // Example usage of dynamic logging
-log('Application starting...', LogLevel.Info);

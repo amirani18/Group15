@@ -60,21 +60,14 @@ export class Metrics {
         doc_m = ver_bounds(doc_m);
         var depend_m = ver_bounds(this.parameters.depend/0.01);
         
-        console.log("depend_m:", depend_m);
-        console.log("doc_m:", doc_m);
-        console.log("contr_m:", contr_m);
-        console.log("cact_m:", cact_m);
-
 
         var bus = (contr_m * 45 + cact_m * 60 + doc_m * 50 + depend_m * 35) / BUS_TOTAL;
-        console.log(bus);
         this.parameters.depend_m = depend_m;
         this.url.bus_factor=bus;
         var end = new Date();
         var buslat = latency_calc(this.parameters.now, end) + this.parameters.calclat;
         this.url.bus_factor_latency = buslat;
         
-        console.log("Bus factor latency: ", buslat);
     }
 
     calculate_correctness(): void {
@@ -99,7 +92,6 @@ export class Metrics {
         var vul_m = ver_bounds(1 - (vul / 0.001));
         
         var cor = (open_m * 65 + update_m * 55 + vul_m * 70) / COR_TOTAL;
-        console.log(cor);
         this.parameters.update_m = update_m;
         this.url.correctness = cor;
         var end = new Date();
@@ -205,7 +197,6 @@ export class Metrics {
         var lic = 0;
         if(metrics.licenseInfo) {
             if(metrics.licenseInfo.name) {
-                console.log(metrics.licenseInfo.name);
                 lic = checkcompatible(metrics.licenseInfo.name.toLocaleLowerCase(), lictext, lic);
             }
         }

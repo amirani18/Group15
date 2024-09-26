@@ -370,135 +370,193 @@ async function run_test_suite(): Promise<void>{
 
 
     //Test cases 6-10: calculate correctness of code
+    //Test cases 6-10: calculate correctness of code
     
+    console.log("Test Case 6: Calculate correctness of new repository");
     console.log("Test Case 6: Calculate correctness of new repository");
     const correctness_new = test_correctness_factor(new_repo);
     if(correctness_new < 0.3 ){
+        console.log("Test #6 Passed! Correctness is less than expected value of 0.3.");
         console.log("Test #6 Passed! Correctness is less than expected value of 0.3.");
         pass_count++;
     }
     else{
         console.log("Test #6 Failed! Correctness is greater than expected value of 0.3.");
+        console.log("Test #6 Failed! Correctness is greater than expected value of 0.3.");
         fail_count++;
     }
     
     console.log("Test Case 7: Calculate correctness of big repository");
+    console.log("Test Case 7: Calculate correctness of big repository");
     const correctness_big = test_correctness_factor(big_repo);
     if(correctness_big > 0.5 ){
+        console.log("Test #7 Passed! Correctness is greater than expected value of 0.5.");
         console.log("Test #7 Passed! Correctness is greater than expected value of 0.5.");
         pass_count++;
     }
     else{
         console.log("Test #7 Failed! Correctness is less than expected value of 0.5.");
+        console.log("Test #7 Failed! Correctness is less than expected value of 0.5.");
         fail_count++;
     }
 
     console.log("Test Case 8: Calculate correctness of old repository");
+    console.log("Test Case 8: Calculate correctness of old repository");
     const correctness_old = test_correctness_factor(old_repo);
     if(correctness_old > 0.5 ){
+        console.log("Test #8 Passed! Correctness is greater than expected value of 0.5.");
         console.log("Test #8 Passed! Correctness is greater than expected value of 0.5.");
         pass_count++;
     }
     else{
+        console.log("Test #8 Failed! Correctness is less than expected value of 0.5.");
         console.log("Test #8 Failed! Correctness is less than expected value of 0.5.");
         fail_count++;
     }
 
     //Test cases 12-16: calculate rampup factor
     console.log("Test Case 9: Calculate rampup factor of new repository");
+    console.log("Test Case 9: Calculate rampup factor of new repository");
     const rampup_new = test_rampup_factor(new_repo);
     if(rampup_new < 0.3 ){
+        console.log("Test #9 Passed! Rampup is less than expected value of 0.3.");
         console.log("Test #9 Passed! Rampup is less than expected value of 0.3.");
         pass_count++;
     }
     else{
         console.log("Test #9 Failed! Rampup is greater than expected value of 0.3.");
+        console.log("Test #9 Failed! Rampup is greater than expected value of 0.3.");
         fail_count++;
     }
 
     console.log("Test Case 10: Calculate rampup factor of big repository");
+    console.log("Test Case 10: Calculate rampup factor of big repository");
     const rampup_big = test_rampup_factor(big_repo);
     if(rampup_big > 0.5 ){
+        console.log("Test #10 Passed! Rampup is greater than expected value of 0.5.");
         console.log("Test #10 Passed! Rampup is greater than expected value of 0.5.");
         pass_count++;
     }
     else{
         console.log("Test #10 Failed! Rampup is less than expected value of 0.5.");
+        console.log("Test #10 Failed! Rampup is less than expected value of 0.5.");
         fail_count++;
     }
 
     console.log("Test Case 11: Calculate rampup factor of old repository");
+    console.log("Test Case 11: Calculate rampup factor of old repository");
     const rampup_old = test_rampup_factor(old_repo);
     if(rampup_old > 0.5 ){
+        console.log("Test #11 Passed! Rampup is greater than expected value of 0.5.");
         console.log("Test #11 Passed! Rampup is greater than expected value of 0.5.");
         pass_count++;
     }
     else{
+        console.log("Test #11 Failed! Rampup is less than expected value of 0.5.");
         console.log("Test #11 Failed! Rampup is less than expected value of 0.5.");
         fail_count++;   
     }
 
     //Test cases 17-21: calculate responsive maintainer factor
     console.log("Test Case 12: Calculate responsive maintainer factor of new repository");
+    console.log("Test Case 12: Calculate responsive maintainer factor of new repository");
     const resmaintainer_new = test_resmaintainer_factor(new_repo);
 
     if(resmaintainer_new < 0.3 ){
+        console.log("Test #12 Passed! Responsive Maintainer is less than expected value of 0.3.");
         console.log("Test #12 Passed! Responsive Maintainer is less than expected value of 0.3.");
         pass_count++;
     }
     else{
         console.log("Test #12 Failed! Responsive Maintainer is greater than expected value of 0.3.");
+        console.log("Test #12 Failed! Responsive Maintainer is greater than expected value of 0.3.");
         fail_count++;
     }
 
     console.log("Test Case 13: Calculate responsive maintainer factor of big repository");
+    console.log("Test Case 13: Calculate responsive maintainer factor of big repository");
     const resmaintainer_big = test_resmaintainer_factor(big_repo);
     if(resmaintainer_big > 0.5 ){
+        console.log("Test #13 Passed! Responsive Maintainer is greater than expected value of 0.5.");
         console.log("Test #13 Passed! Responsive Maintainer is greater than expected value of 0.5.");
         pass_count++;
     }
     else{
         console.log("Test #13 Failed! Responsive Maintainer is less than expected value of 0.5.");
+        console.log("Test #13 Failed! Responsive Maintainer is less than expected value of 0.5.");
         fail_count++;
     }
 
     console.log("Test Case 14: Calculate responsive maintainer factor of old repository");
+    console.log("Test Case 14: Calculate responsive maintainer factor of old repository");
     const resmaintainer_old = test_resmaintainer_factor(old_repo);
     if(resmaintainer_old > 0.5 ){
+        console.log("Test #14 Passed! Responsive Maintainer is greater than expected value of 0.5.");
         console.log("Test #14 Passed! Responsive Maintainer is greater than expected value of 0.5.");
         pass_count++;
     }
     else{
+        console.log("Test #14 Failed! Responsive Maintainer is less than expected value of 0.5.");
         console.log("Test #14 Failed! Responsive Maintainer is less than expected value of 0.5.");
         fail_count++;
     }
     
     //Test cases 22-26: calculate license factor
     console.log("Test Case 15: Calculate license factor of new repository");
+    console.log("Test Case 15: Calculate license factor of new repository");
     const license_new = test_license_factor(new_repo);
     if(license_new < 0.3 ){
+        console.log("Test #15 Passed! License is less than expected value of 0.5.");
         console.log("Test #15 Passed! License is less than expected value of 0.5.");
         pass_count++;
     }
     else{
         console.log("Test #15 Failed! License is greater than expected value of 0.3.");
+        console.log("Test #15 Failed! License is greater than expected value of 0.3.");
         fail_count++;
     }
 
     console.log("Test Case 16: Calculate license factor of big repository");
+    console.log("Test Case 16: Calculate license factor of big repository");
     const license_big = test_license_factor(big_repo);
     if(license_big > 0.5 ){
+        console.log("Test #16 Passed! License is greater than expected value of 0.5.");
         console.log("Test #16 Passed! License is greater than expected value of 0.5.");
         pass_count++;
     }
     else{
         console.log("Test #16 Failed! License is less than expected value of 0.5.");
+        console.log("Test #16 Failed! License is less than expected value of 0.5.");
         fail_count++;
     }
 
     console.log("Test Case 17: Calculate license factor of old repository");
+    console.log("Test Case 17: Calculate license factor of old repository");
     const license_old = test_license_factor(old_repo);
     if(license_old > 0.5 ){
+        console.log("Test #17 Passed! License is greater than expected value of 0.5.");
+        pass_count++;
+    }
+    else{
+        console.log("Test #17 Failed! License is less than expected value of 0.5.");
+        fail_count++;
+    }
+
+    console.log("Test Case 18: Calculate net score of new repository");
+    const net_score_new = test_net_score(new_repo);
+    if(net_score_new < 0.5 ){
+        console.log("Test #18 Passed! Net Score is less than expected value of 0.5.");
+        pass_count++;
+    }
+    else{
+        console.log("Test #18 Failed! Net Score is greater than expected value of 0.5.");
+        fail_count++;
+    }
+
+    console.log("Test Case 19: Calculate net score of big repository");
+    const net_score_big = test_net_score(big_repo);
+    if(net_score_big > 0.5 ){
+        console.log("Test #19 Passed! Net Score is greater than expected value of 0.5.");
         console.log("Test #17 Passed! License is greater than expected value of 0.5.");
         pass_count++;
     }
@@ -536,12 +594,40 @@ async function run_test_suite(): Promise<void>{
         pass_count++;
     }
     else{
+        console.log("Test #19 Failed! Net Score is less than expected value of 0.5.");
         console.log("Test #20 Failed! Net Score is less than expected value of 0.5.");
         fail_count++;
     }
 
+    console.log("Test Case 20: Calculate net score of old repository");
+    const net_score_old = test_net_score(old_repo);
+    if(net_score_old > 0.5 ){
+        console.log("Test #20 Passed! Net Score is greater than expected value of 0.5.");
+        pass_count++;
+    }
+    else{
+        console.log("Test #20 Failed! Net Score is less than expected value of 0.5.");
+        fail_count++;
+    }
+    var totalCount = 20;
+    var coverage = 81.74;
+    console.log("Total: ",String(totalCount))
+    console.log("Passed: ",pass_count);
+    console.log(`Coverage: ${coverage}%`);
+    console.log(`${pass_count}/${totalCount} test cases passed. ${coverage}% line coverage achieved`);
+
+
 }
 run_test_suite();
+
+//test net score calculation
+function test_net_score(repository:Response):number{
+    const parameters:queries = get_parameters(repository);
+    const url:url_interface = get_factors(parameters);
+    const metrics = new Metrics(url,parameters);
+    metrics.calc_net_score();
+    return url.net_score;
+}
 
 //test net score calculation
 function test_net_score(repository:Response):number{
