@@ -222,9 +222,9 @@ export class Metrics {
     calc_net_score() {
         var net = (this.url.bus_factor + this.url.correctness + this.url.ramp_up + this.url.responsive_maintainer * 2 + this.url.license) / 6.
         var end = new Date();
-        this.url.license = this.url.license
-        var liclat = latency_calc(this.parameters.now, end) - this.url.correctness_latency;
-        this.url.license_latency = liclat;
+        this.url.net_score = net
+        var net_lat = latency_calc(this.parameters.start, end);
+        this.url.net_score_latency= net_lat;
 
     }
 

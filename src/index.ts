@@ -21,12 +21,12 @@ export function isValidUrl(input: string): boolean {
     }
 }
 
-async function get_package_name (package_url: string) {
+export async function get_package_name (package_url: string) {
     const package_name = package_url.split('/').pop();
     return package_name;
 }
 
-async function getGitHubRepoUrl(package_name: string) {
+export async function getGitHubRepoUrl(package_name: string) {
     try {
       const response = await axios.get(`https://registry.npmjs.org/${package_name}`);
       const latest_version = response.data['dist-tags'].latest; //get latest version of package
@@ -51,7 +51,7 @@ async function getGitHubRepoUrl(package_name: string) {
     }
   }
 
-async function fetchRepoUrl(package_url: string) {
+export async function fetchRepoUrl(package_url: string) {
     const package_name = await get_package_name(package_url);
     const gitHubUrl = await getGitHubRepoUrl(String(package_name));  // Output is assigned to gitHubUrl
     return gitHubUrl;
@@ -97,12 +97,14 @@ export async function get_url_interface(urlInput:string):Promise<url_interface> 
     };
     try {
         // Call the fetchRepo function
-        parameters = await fetch_repo(GRAPHQL_URL, headers, urlInput, 10);
+        var start = new Date();
+        parameters = await fetch_repo(GRAPHQL_URL, headers, urlInput, start);
         if (parameters) {
             metrics = new Metrics(url,parameters);
         }
         else {
             log("Couldn't locate parameters from repository",2,"ERROR")
+            process.exit(1);
             return url;
         }
     
@@ -145,22 +147,21 @@ export async function calculate_factors(urlInput:string) {
         let url:url_interface | undefined;
         url = await get_url_interface(urlInput);
         let data;
-        // console.log("getting url")
         if (url) {
             data ={
                 URL:urlInput,
-                NetScore: url.net_score,
-                NetScore_Latency: url.net_score_latency,
-                RampUP:url.ramp_up,
-                RampUp_Latency: url.ramp_up_latency,
-                Correctness: url.correctness,
-                Correctness_Latency: url.correctness_latency,
-                BusFactor : url.bus_factor,
-                BusFactor_Latency : url.bus_factor_latency,
-                ResponsiveMaintainer : url.responsive_maintainer,
-                ResponsiveMaintainer_Latency :url.responsive_maintainer_latency,
-                License: url.license,
-                License_Latency: url.license_latency,
+                NetScore: url.net_score ||  0,
+                NetScore_Latency: url.net_score_latency || 0,
+                RampUP:url.ramp_up || 0 ,
+                RampUp_Latency: url.ramp_up_latency || 0 ,
+                Correctness: url.correctness || 0 ,
+                Correctness_Latency: url.correctness_latency || 0 ,
+                BusFactor : url.bus_factor || 0 ,
+                BusFactor_Latency : url.bus_factor_latency || 0 ,
+                ResponsiveMaintainer : url.responsive_maintainer || 0 ,
+                ResponsiveMaintainer_Latency :url.responsive_maintainer_latency || 0 ,
+                License: url.license || 0 ,
+                License_Latency: url.license_latency || 0 ,
             }
         }
         else {
@@ -168,37 +169,41 @@ export async function calculate_factors(urlInput:string) {
         }
         const output = JSON.stringify(data);
         console.log(output);
+    
 
         
     }
     else if (urlInput.includes("npmjs.com/package")) {
         //find eqvivalent github link and then call analyzeGraphQL();
         log("Link is an NPM URL",1,"INFO");
-
         // const npmResult = analyzeNpm();
         // console.log(npmResult);
         let url:url_interface | undefined;
-        urlInput = String(fetchRepoUrl(urlInput))
+        urlInput = String(await fetchRepoUrl(urlInput))
         url = await get_url_interface(urlInput);
         let data;
-        // console.log("getting url")
         if (url) {
             data ={
                 URL:urlInput,
-                NetScore: url.net_score,
-                RampUP:url.ramp_up,
-                Correctness: url.correctness,
-                BusFactor : url.bus_factor,
-                BusFactorLatency : url.bus_factor_latency,
-                License: url.license,
+                NetScore: url.net_score ||  0,
+                NetScore_Latency: url.net_score_latency || 0,
+                RampUP:url.ramp_up || 0 ,
+                RampUp_Latency: url.ramp_up_latency || 0 ,
+                Correctness: url.correctness || 0 ,
+                Correctness_Latency: url.correctness_latency || 0 ,
+                BusFactor : url.bus_factor || 0 ,
+                BusFactor_Latency : url.bus_factor_latency || 0 ,
+                ResponsiveMaintainer : url.responsive_maintainer || 0 ,
+                ResponsiveMaintainer_Latency :url.responsive_maintainer_latency || 0 ,
+                License: url.license || 0 ,
+                License_Latency: url.license_latency || 0 ,
             }
         }
         else {
-            data = {}
+            process.exit(1)
         }
         const output = JSON.stringify(data);
         console.log(output);
-
 
     }
     else {
@@ -238,7 +243,6 @@ async function main() {
 main()
 
 
-
 /*
 1. Writes test cases for empty files
 2. Configure ./run test
@@ -246,4 +250,3 @@ main()
 4. Create error checking, add promises, add cases for if parameter cannot be extracted, exiting 0 and 1
 5. Run in eceprog
 */
-
